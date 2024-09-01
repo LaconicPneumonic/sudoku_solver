@@ -8,14 +8,18 @@ impl SudokuBoard {
         SudokuBoard { board: [[0; 9]; 9] }
     }
 
-    fn from_lines(lines: impl Iterator<Item = String>) -> SudokuBoard {
+    pub fn from_condensed(condensed: &str) -> SudokuBoard {
         let mut board = SudokuBoard::new();
 
-        for (i, line) in lines.enumerate() {
-            for (j, c) in line.chars().enumerate() {
-                let n = c.to_digit(10).unwrap() as u8;
-                board.board[i][j] = n;
-            }
+        for (i, c) in condensed.chars().enumerate() {
+            let n = {
+                if c == '.' {
+                    0
+                } else {
+                    c.to_digit(10).unwrap() as u8
+                }
+            };
+            board.board[i / 9][i % 9] = n;
         }
 
         board
@@ -57,7 +61,7 @@ impl SudokuBoard {
         squares
     }
 
-    fn check(&self) -> bool {
+    pub fn check(&self) -> bool {
         let rows = (0..9).map(|i| self.get_row(i));
         let cols = (0..9).map(|i| self.get_col(i));
         let squares = self.all_squares().into_iter().map(|s| s);

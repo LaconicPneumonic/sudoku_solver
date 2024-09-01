@@ -65,29 +65,21 @@ fn main() {
 
     let solving_function = BACKTRACKING_SOLVER;
 
-    for line in lines.chain(vec![Ok("TERMINATOR".to_string())]) {
-        let line = line.unwrap();
+    for line in lines {
+        let board = sudoku::SudokuBoard::from_condensed(line.unwrap().as_str());
+        let solved_board = solving_function(&board);
 
-        if line.starts_with("Grid") || line == "TERMINATOR" {
-            if sudoku_buffer.len() > 0 {
-                let board = SudokuBoard::from_lines(sudoku_buffer.clone().into_iter());
-                let solved_board = solving_function(&board);
-
-                match solved_board {
-                    Some(board) => {
-                        println!("solved board {:} {:}", board_num, board.check());
-                    }
-                    None => {
-                        println!("No solution found");
-                    }
-                }
-
-                board_num += 1;
-
-                sudoku_buffer.clear();
+        match solved_board {
+            Some(board) => {
+                println!("solved board {:} {:}", board_num, board.check());
             }
-        } else {
-            sudoku_buffer.push(line);
+            None => {
+                println!("No solution found");
+            }
         }
+
+        board_num += 1;
+
+        sudoku_buffer.clear();
     }
 }
