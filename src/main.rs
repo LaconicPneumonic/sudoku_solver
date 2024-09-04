@@ -1,51 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
-mod sudoku;
-
-const BACKTRACKING_SOLVER: sudoku::SudokuSolver = |initial_board| -> Option<sudoku::SudokuBoard> {
-    // solve the board
-
-    let mut board_stack = vec![initial_board.clone()];
-
-    while !board_stack.is_empty() {
-        let board = board_stack.pop().unwrap();
-
-        let first_non_zero = (0..9)
-            .map(|i| (0..9).map(move |j| (i, j)))
-            .flatten()
-            .find(|(i, j)| board.board[*i][*j] == 0);
-
-        if first_non_zero.is_none() {
-            return Some(board);
-        }
-
-        let (i, j) = first_non_zero.unwrap();
-
-        let mut possible_values = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let row = board.get_row(i);
-        let col = board.get_col(j);
-        let square = board.get_square(i, j);
-        for k in 0..9 {
-            if row[k] != 0 {
-                possible_values.retain(|&x| x != row[k]);
-            }
-            if col[k] != 0 {
-                possible_values.retain(|&x| x != col[k]);
-            }
-            if square[k] != 0 {
-                possible_values.retain(|&x| x != square[k]);
-            }
-        }
-
-        for value in possible_values {
-            let mut new_board = board.clone();
-            new_board.board[i][j] = value;
-            board_stack.push(new_board);
-        }
-    }
-
-    return board_stack.pop();
-};
+use sudoku_solver::{SudokuBoard, BACKTRACKING_SOLVER};
 
 fn main() {
     let sudoku_file = std::env::args().nth(1).expect("missing file name");
@@ -59,14 +14,12 @@ fn main() {
 
     let lines = io::BufReader::new(file).lines();
 
-    let mut sudoku_buffer: Vec<String> = vec![];
-
     let mut board_num = 0;
 
     let solving_function = BACKTRACKING_SOLVER;
 
     for line in lines {
-        let board = sudoku::SudokuBoard::from_condensed(line.unwrap().as_str());
+        let board = SudokuBoard::from_condensed(line.unwrap().as_str());
         let solved_board = solving_function(&board);
 
         match solved_board {
@@ -80,6 +33,6 @@ fn main() {
 
         board_num += 1;
 
-        sudoku_buffer.clear();
+        break;
     }
 }

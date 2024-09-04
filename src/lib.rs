@@ -109,3 +109,48 @@ impl SudokuBoard {
 }
 
 pub type SudokuSolver = fn(&SudokuBoard) -> Option<SudokuBoard>;
+
+pub const BACKTRACKING_SOLVER: SudokuSolver = |initial_board| -> Option<SudokuBoard> {
+    // solve the board
+
+    let mut board_stack = vec![initial_board.clone()];
+
+    while !board_stack.is_empty() {
+        let board = board_stack.pop().unwrap();
+
+        let first_non_zero = (0..9)
+            .map(|i| (0..9).map(move |j| (i, j)))
+            .flatten()
+            .find(|(i, j)| board.board[*i][*j] == 0);
+
+        if first_non_zero.is_none() {
+            return Some(board);
+        }
+
+        let (i, j) = first_non_zero.unwrap();
+
+        let mut possible_values = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let row = board.get_row(i);
+        let col = board.get_col(j);
+        let square = board.get_square(i, j);
+        for k in 0..9 {
+            if row[k] != 0 {
+                possible_values.retain(|&x| x != row[k]);
+            }
+            if col[k] != 0 {
+                possible_values.retain(|&x| x != col[k]);
+            }
+            if square[k] != 0 {
+                possible_values.retain(|&x| x != square[k]);
+            }
+        }
+
+        for value in possible_values {
+            let mut new_board = board.clone();
+            new_board.board[i][j] = value;
+            board_stack.push(new_board);
+        }
+    }
+
+    return board_stack.pop();
+};
